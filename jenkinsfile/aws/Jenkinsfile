@@ -56,6 +56,12 @@ node(NODE_MASTER) {
 
         stage("Mount Dev EFS") {
             log.info "Mounting EFS to /mnt/dev-efs"
+
+            mountEfs([
+                mountPoint : "${DEV_EFS_MOUNT}",
+                efsId      : "${env.EFS_ID}",
+                region     : "${env.REGION}"
+            ])
         }
 
     } catch (exc) {
