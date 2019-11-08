@@ -70,8 +70,8 @@ node(NODE_MASTER) {
                     withEnv(["SOURCE_ARTIFACTS=${ARTIFACTS_DIR}","MOUNT_POINT=${DEV_EFS_MOUNT}"]) {
                 int status = sh(
                         script: '''
-                            cp -f ${SOURCE_ARTIFACTS}/artifacts/repository/deployment/server/webapps/*_common*.war ${MOUNT_POINT}/server/webapps/
-                            cp -f ${SOURCE_ARTIFACTS}/artifacts/repository/deployment/server/webapps/*_dev*.war ${MOUNT_POINT}/server/webapps/
+                            sudo cp -f ${SOURCE_ARTIFACTS}/artifacts/repository/deployment/server/webapps/*_common*.war ${MOUNT_POINT}/server/webapps/
+                            sudo cp -f ${SOURCE_ARTIFACTS}/artifacts/repository/deployment/server/webapps/*_dev*.war ${MOUNT_POINT}/server/webapps/
                         ''',
                         returnStatus: true
                 )
