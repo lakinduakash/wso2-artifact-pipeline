@@ -67,15 +67,15 @@ node(NODE_MASTER) {
                 stage("Copy Dev artifacts") {
                     log.info "Copying dev artifacts"
 
-                    withEnv(["SOURCE_ARTIFACTS=${ARTIFACTS_DIR}","MOUNT_POINT=${DEV_EFS_MOUNT}"]) {
+                    withEnv(["SOURCE_ARTIFACTS=${ARTIFACTS_DIR}","MOUNT_POINT=${DEV_EFS_MOUNT}","JOB_NAME=${env.JOB_NAME}"]) {
                 int status = sh(
                         script: '''
                             homedir=$( getent passwd "jenkins" | cut -d: -f6 )
 
                             sudo mkdir -p ${MOUNT_POINT}/server/webapps
 
-                            sudo cp -f ${homedir}/${SOURCE_ARTIFACTS}/artifacts/repository/deployment/server/webapps/*_common*.war ${MOUNT_POINT}/server/webapps/
-                            sudo cp -f ${homedir}/${SOURCE_ARTIFACTS}/artifacts/repository/deployment/server/webapps/*_dev*.war ${MOUNT_POINT}/server/webapps/
+                            sudo cp -f ${homedir}/workspace/${JOB_NAME}/${SOURCE_ARTIFACTS}/artifacts/repository/deployment/server/webapps/*_common*.war ${MOUNT_POINT}/server/webapps/
+                            sudo cp -f ${homedir}/workspace/${JOB_NAME}/${SOURCE_ARTIFACTS}/artifacts/repository/deployment/server/webapps/*_dev*.war ${MOUNT_POINT}/server/webapps/
                         ''',
                         returnStatus: true
                 )
