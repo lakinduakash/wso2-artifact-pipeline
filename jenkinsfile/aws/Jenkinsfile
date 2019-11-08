@@ -54,14 +54,34 @@ node(NODE_MASTER) {
             cloneRepoToDir env.GIT_REPO_ARTIFACTS, ARTIFACTS_DIR
         }
 
-        stage("Mount Dev EFS") {
-            log.info "Mounting EFS to /mnt/dev-efs"
+            stage("Mount Dev EFS") {
+                log.info "Mounting EFS to /mnt/dev-efs"
 
-            mountEfs([
-                mountPoint : "${DEV_EFS_MOUNT}",
-                efsId      : "${env.EFS_ID}",
-                region     : "${env.REGION}"
-            ])
+                mountEfs([
+                    mountPoint : "${DEV_EFS_MOUNT}",
+                    efsId      : "${env.DEV_EFS_ID}",
+                    region     : "${env.REGION}"
+                ])
+            }
+
+                stage("Copy Dev artifacts") {
+                    log.info "Copying dev artifacts"
+
+                    withEnv(["SOURCE_ARTIFACTS=${ARTIFACTS_DIR}","MOUNT_POINT=${DEV_EFS_MOUNT}"]) {
+                int status = sh(
+                        script: '''
+                            cp -f ${SOURCE_ARTIFACTS}/artifacts/repository/deployment/server/webapps/*_common*.war ${MOUNT_POINT}/server/webapps/
+                            cp -f ${SOURCE_ARTIFACTS}/artifacts/repository/deployment/server/webapps/*_dev*.war ${MOUNT_POINT}/server/webapps/
+                        ''',
+                        returnStatus: true
+                )
+                if (status != Constants.ControlConstants.STATUS_COMPLETED) {
+                    throw new Exception("Copy failed")
+                }
+
+            }
+
+            //unmountEfs([mountPoint : "${DEV_EFS_MOUNT}"])
         }
 
     } catch (exc) {
