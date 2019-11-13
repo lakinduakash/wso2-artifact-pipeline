@@ -85,6 +85,9 @@ node(NODE_MASTER) {
 
             }
 
+        }
+
+        stage("Unmounting EFS") {
             unmountEfs([mountPoint : "${DEV_EFS_MOUNT}"])
         }
 
