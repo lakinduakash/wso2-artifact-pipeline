@@ -85,7 +85,7 @@ node(NODE_MASTER) {
 
             }
 
-            //unmountEfs([mountPoint : "${DEV_EFS_MOUNT}"])
+            unmountEfs([mountPoint : "${DEV_EFS_MOUNT}"])
         }
 
     } catch (exc) {
