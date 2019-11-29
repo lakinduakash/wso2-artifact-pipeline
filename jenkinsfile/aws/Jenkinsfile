@@ -76,7 +76,7 @@ node(NODE_MASTER) {
 
                             sudo mkdir -p ${MOUNT_POINT}/server/webapps
 
-                            sudo cp -f ${homedir}/workspace/${JOB_NAME}/${SOURCE_ARTIFACTS}/artifacts/repository/deployment/server/webapps/*_common*.war ${MOUNT_POINT}/server/webapps/ || echo test
+                            sudo cp -f ${homedir}/workspace/${JOB_NAME}/${SOURCE_ARTIFACTS}/artifacts/repository/deployment/server/webapps/*.war ${MOUNT_POINT}/server/webapps/ || echo test
                             sudo cp -f ${homedir}/workspace/${JOB_NAME}/${SOURCE_ARTIFACTS}/artifacts/repository/deployment/server/webapps/*_dev*.war ${MOUNT_POINT}/server/webapps/ || echo test
                         ''',
                         returnStatus: true
