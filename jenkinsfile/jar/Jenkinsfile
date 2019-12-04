@@ -1,0 +1,104 @@
+/*
+*  Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+*
+*  WSO2 Inc. licenses this file to you under the Apache License,
+*  Version 2.0 (the "License"); you may not use this file except
+*  in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied.  See the License for the
+* specific language governing permissions and limitations
+* under the License.
+*/
+
+@Library('wso2-jenkins-shared-lib')
+import org.wso2.util.Constants
+
+//Nodes
+def NODE_MASTER = "master"
+node(NODE_MASTER) {
+    def PROD = "Prod"
+    def STAGING = "Staging"
+    def DEV = "Dev"
+    
+    //Directories
+    def DEPLOYMENT_DIR = "deployment"
+    def CONF_HOME_DIR = "configs"
+    def ARTIFACTS_DIR_JAR = "cicd-test-artifacts-jar"
+
+    //Mount Points
+     def DEV_EFS_MOUNT = "/mnt/dev-efs"
+     def PROD_EFS_MOUNT = "/mnt/prod-efs"
+
+    // Resource Locations
+    def DEV_ENDPOINT_RESOURCES_JAR = "${DEV_EFS_MOUNT}/lib"
+    def PROD_ENDPOINT_RESOURCES_JAR = "${PROD_EFS_MOUNT}/lib"
+    
+    //Config Files
+    def ENV = '/home/jenkins/jenkins_env'
+    
+    def AWS_CREDS_LOC = '/home/ubuntu/.aws/credentials'
+    //repos
+    def GIT_REPO_RESOURCES = 'https://github.com/lakinduakash/aws-pipeline'
+
+    try {
+        stage(Constants.Stages.SETUP_ENV) {
+            log.info "Setting up the Environment"
+            log.info "${env}"
+            
+            file = load ENV
+            env.REGION = getAvailabilityZone()
+            cloneRepoToDir env.GIT_REPO_ARTIFACTS_JAR, ARTIFACTS_DIR_JAR
+        }
+
+            stage("Mount Dev EFS") {
+                log.info "Mounting EFS to /mnt/dev-efs"
+
+                mountEfs([
+                    mountPoint : "${DEV_EFS_MOUNT}",
+                    efsId      : "${env.DEV_EFS_ID}",
+                    region     : "${env.REGION}"
+                ])
+            }
+
+                stage("Copy Dev jar artifacts") {
+                    log.info "Copying dev artifacts"
+
+                    withEnv(["SOURCE_ARTIFACTS=${ARTIFACTS_DIR_JAR}","MOUNT_POINT=${DEV_EFS_MOUNT}","JOB_NAME=${env.JOB_NAME}"]) {
+                int status = sh(
+                        script: '''
+                            homedir=$( getent passwd "jenkins" | cut -d: -f6 )
+                            
+                            sudo rsync -r --del ${homedir}/workspace/${JOB_NAME}/${SOURCE_ARTIFACTS}/lib/ ${MOUNT_POINT}/lib/
+                        ''',
+                        returnStatus: true
+                )
+                if (status != Constants.ControlConstants.STATUS_COMPLETED) {
+                    throw new Exception("Copy failed")
+                }
+
+            }
+
+        }
+
+        stage("Unmounting EFS") {
+            unmountEfs([mountPoint : "${DEV_EFS_MOUNT}"])
+        }
+
+    } catch (exc) {
+        log.err "Caught: ${exc}"
+        String recipient = env.Email
+        mail subject: "${env.JOB_NAME} (${env.BUILD_NUMBER}) build failed",
+                body: "${env.JOB_NAME} build ${env.BUILD_NUMBER} failed in Jenkins. Check console output at $BUILD_URL to view the results.",
+                to: recipient,
+                replyTo: recipient,
+                from: 'noreply@wso2cicd.com'
+        throw exc
+    }
+
+}
