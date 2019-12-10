@@ -88,8 +88,9 @@ node(NODE_MASTER) {
         stage("Unmounting EFS") {
             sh(
                 script: '''
-                test
-                '''   
+                    test
+                ''',
+                returnStatus: true  
             )
             //unmountEfs([mountPoint : "${DEV_EFS_MOUNT}"])
         }
