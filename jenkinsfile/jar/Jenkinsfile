@@ -73,7 +73,6 @@ node(NODE_MASTER) {
                 int status = sh(
                         script: '''
                             homedir=$( getent passwd "jenkins" | cut -d: -f6 )
-                            
                             sudo rsync -r --del ${homedir}/workspace/${JOB_NAME}/${SOURCE_ARTIFACTS}/lib/ ${MOUNT_POINT}/lib/
                         ''',
                         returnStatus: true
@@ -87,7 +86,12 @@ node(NODE_MASTER) {
         }
 
         stage("Unmounting EFS") {
-            unmountEfs([mountPoint : "${DEV_EFS_MOUNT}"])
+            sh(
+                script: '''
+                test
+                '''   
+            )
+            //unmountEfs([mountPoint : "${DEV_EFS_MOUNT}"])
         }
 
     } catch (exc) {
