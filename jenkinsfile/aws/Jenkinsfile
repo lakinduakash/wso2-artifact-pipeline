@@ -79,7 +79,7 @@ node(NODE_MASTER) {
                             git pull origin dev
 
                             sudo mkdir -p ${MOUNT_POINT}/server/webapps
-                            sudo rsync --include="*.war" --exclude="*" --delete-before -d --delete-excluded ${homedir}/workspace/${JOB_NAME}/${SOURCE_ARTIFACTS}/artifacts/repository/deployment/server/webapps/ ${MOUNT_POINT}/server/webapps/
+                            sudo rsync --include="*.war" --exclude="*" --delete-before -d ${homedir}/workspace/${JOB_NAME}/${SOURCE_ARTIFACTS}/artifacts/repository/deployment/server/webapps/ ${MOUNT_POINT}/server/webapps/
 
                             ''',
                         returnStatus: true
